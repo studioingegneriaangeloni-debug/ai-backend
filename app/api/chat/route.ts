@@ -13,13 +13,25 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-console.log("ROUTE V2 ATTIVA");
+    const promptPath = path.join(
+      process.cwd(),
+      "app",
+      "prompts",
+      "eap-system-v1.md"
+    );
 
-console.log("ROUTE V2 ATTIVA");
+    const systemPrompt =
+      fs.readFileSync(promptPath, "utf8");
 
-return NextResponse.json({
-  reply: "ROUTE V2 ATTIVA",
-});
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      instructions: systemPrompt,
+      input: body.message,
+    });
+
+    return NextResponse.json({
+      reply: response.output_text,
+    });
 
   } catch (error) {
 
@@ -35,3 +47,4 @@ return NextResponse.json({
     );
   }
 }
+```
