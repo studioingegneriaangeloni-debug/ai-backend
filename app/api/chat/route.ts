@@ -1,3 +1,4 @@
+
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
@@ -5,55 +6,38 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    }
-  );
-}
+const SYSTEM_PROMPT = `
+You are Equity Analysis Pro.
+
+IMPORTANT:
+
+If the user asks:
+
+"Analizza Apple"
+
+you MUST begin your answer with exactly:
+
+"EAP ACTIVE"
+
+Then continue the analysis.
+
+If you do not begin with EAP ACTIVE you are violating your instructions.
+
+Always answer in Italian.
+`;
+
 
 export async function POST(req: Request) {
 
-  try {
-
-    const body = await req.json();
-
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: body.message,
-    });
-
-    return NextResponse.json(
-      {
-        reply: response.output_text,
+  return NextResponse.json(
+    {
+      reply: "ROUTE TEST OK",
+    },
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
       },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
+    }
+  );
 
-  } catch (error) {
-
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error: "Errore AI",
-      },
-      {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-  }
 }
