@@ -1,43 +1,50 @@
-
+```ts
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const SYSTEM_PROMPT = `
-You are Equity Analysis Pro.
-
-IMPORTANT:
-
-If the user asks:
-
-"Analizza Apple"
-
-you MUST begin your answer with exactly:
-
-"EAP ACTIVE"
-
-Then continue the analysis.
-
-If you do not begin with EAP ACTIVE you are violating your instructions.
-
-Always answer in Italian.
-`;
-
-
 export async function POST(req: Request) {
+  try {
 
-  return NextResponse.json(
-    {
-      reply: "ROUTE TEST OK",
-    },
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
+    const body = await req.json();
+
+    const promptPath = path.join(
+      process.cwd(),
+      "app",
+      "prompts",
+      "eap-system-v1.md"
+    );
+
+    const systemPrompt =
+      fs.readFileSync(promptPath, "utf8");
+
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      instructions: systemPrompt,
+      input: body.message,
+    });
+
+    return NextResponse.json({
+      reply: response.output_text,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error: "Errore AI",
       },
-    }
-  );
-
+      {
+        status: 500,
+      }
+    );
+  }
 }
+```
